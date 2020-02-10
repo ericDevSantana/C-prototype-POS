@@ -73,7 +73,7 @@ int main()
         case 4:
             printf("\nChange table: ");
             scanf("%d",&table1);
-            printf("\nChange table %d to: ",&table1);
+            printf("\nChange table %d to: ",table1);
             scanf("%d",&table2);
             clean_screen();
             if(check_limit(table1,qnt_tables) && check_limit(table2,qnt_tables)){
