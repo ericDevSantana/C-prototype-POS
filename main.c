@@ -71,9 +71,9 @@ int main()
             break;
 		/*TROCAR MESAS*/
         case 4:
-            printf("\nDigite a table a ser trocada: ");
+            printf("\nChange table: ");
             scanf("%d",&table1);
-            printf("\nDigite a segunda table a ser trocada: ");
+            printf("\nChange table %d to: ",&table1);
             scanf("%d",&table2);
             clean_screen();
             if(check_limit(table1,qnt_tables) && check_limit(table2,qnt_tables)){

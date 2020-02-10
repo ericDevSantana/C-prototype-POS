@@ -5,7 +5,8 @@ void configure_file(FILE *config){
     char phone[13];
     int number_tables;
 
-	/*ENTRADA DE DADOS DA EMPRESA E ESCRITA NO ARQUIVO CONFIG BIN*/
+	//Your company's info that goes into config.bin file
+
     printf("Enter company's name: ");
     fgets(name,51,stdin);
     fwrite(name,sizeof(char),51,config);
@@ -22,7 +23,8 @@ FILE* exist_config(){
     FILE *config;
     config = fopen("config.bin","rb");
 
-	/*CASO NÃO ESTEJA CRIADO, CRIAR ARQUIVO CONFIG BIN E CONFIGURAR*/
+	//if config.bin doesn't exist, create a new one
+
     if(config == NULL) {
         config = fopen("config.bin","wb+");
         if(config == NULL) {
@@ -30,13 +32,11 @@ FILE* exist_config(){
             exit(1);
         }
         else {
-            ///printf("Nao existia arquivo.\n");
             configure_file(config);
             system("cls");
             return config;
         }
     }
-    ///printf("Agora existe arquivo.\n");
     return config;
 }
 
@@ -44,7 +44,9 @@ void create_stock(FILE *stock){
     Product p;
     int leave = 0;
 
-	/*ENTRADA DE DADOS PARA O ARQUIVO DE stock E GRAVAÇÃO EM stock BIN*/
+	// Your stock's info that goes into config.bin file
+	// Loop until press 1
+
     printf("\t\tStock creation.\n\n");
     while(!leave) {
         printf("Enter product code: ");
@@ -65,7 +67,8 @@ FILE* exist_stock(){
     FILE *stock;
     stock = fopen("stock.bin","rb");
 
-	/*CASO NÃO ESTEJA CRIADO, CRIAR ARQUIVO stock BIN E PREENCHER*/
+	//if stock.bin doesn't exist, create a new one
+
     if(stock == NULL) {
         stock = fopen("stock.bin","wb+");
         if(stock == NULL) {
@@ -73,12 +76,10 @@ FILE* exist_stock(){
             exit(1);
         }
         else {
-            ///printf("Nao existia arquivo.\n");
             create_stock(stock);
             return stock;
         }
     }
-    ///printf("Agora existe arquivo.\n");
     return stock;
 }
 
@@ -87,7 +88,7 @@ void print_title(FILE *config){
     char phone[13];
     int num_tables;
 	
-	/*VOLTA PONTEIRO PARA INCIO DO ARQUIVO CONFIG BIN E MOSTRA NA TELA*/
+	//Return pointer to the begining of config.bin file and show on the screen
     rewind(config);
 
     fread(name,sizeof(char),51,config);
@@ -104,12 +105,12 @@ Table* allocate_tables(FILE *config){
     Table *tables;
     int num_tables;
 	
-	/*O VALOR 64 BYTES É EXATAMENTE ONDE FICA O NUMERO DE tables NO ARQUIVO CONFIG BIN*/
+	//Offset 64 Bytes to get the number of tables in the config.bin file
     rewind(config);
     fseek(config,64,SEEK_CUR);
     fread(&num_tables,sizeof(int),1,config);
 
-    /*ALOCAÇÃO DE N tables DISPONÍVEIS NA EMPRESA----TIPO Table PERSONALIZADO FUNC.H*/
+	//Allocate a number X of tables (Type Table)
     tables = (Table*)calloc(num_tables,sizeof(Table));
 
     if(!tables){
@@ -125,7 +126,7 @@ Table* allocate_tables(FILE *config){
 void start_orders(Table* tables, int num_tables){
     int i;
 	
-	/*ZERANDO TODOS OS PREÇOS FINAIS DAS tables PARA GARANTIR QUE NÃO TENHA LIXO*/
+	//Initializing all tables with 0 to prevent garbage values
     for(i=0;i<num_tables;i++){
         (tables+num_tables)->price = 0;
     }
@@ -137,18 +138,19 @@ void show_orders(Table* tables, int table, FILE* stock){
 
     clean_screen();
 
-	/*SABER QUANTOS ProductS ----TIPO Product FUNC.H -----*/
+	//Know how many products (Type Product) there are in the stock.bin
     fseek(stock,0,SEEK_END);
     tam = ftell(stock)/sizeof(Product);
     fseek(stock,0,SEEK_SET);
 
-    printf("\t\torders Table[%d]\n\n",table);
+    printf("\t\tOrders Table[%d]\n\n",table);
     for(i=0;i<NUM_ORDERS;i++){
         j = 0;
         rewind(stock);
         if((tables+table)->ORDERS[i]){
             printf("[%d] - ",(tables+table)->ORDERS[i]);
 			/*Table ARMAZENA CODIGO, Product TEM CODIGO, AQUI PROCURA O CODIGO DA Table ATÉ BATER COM O CODIGO DO Product E MOSTRA*/
+			//Table stores product code so here we search for the code
             do {
                 fread(&p,sizeof(Product),1,stock);
                 if(p.cdg == (tables+table)->ORDERS[i])
@@ -157,7 +159,7 @@ void show_orders(Table* tables, int table, FILE* stock){
             }while(j != tam);
         }
     }
-    printf("\tTotal amount: %.2f\n",(tables+table)->price);
+    printf("\tTotal: %.2f\n",(tables+table)->price);
 
 }
 
@@ -230,7 +232,7 @@ void remove_orders(Table* tables, int table, int cdg){
         }
         if (feof(stock)){
             clean_screen();
-            printf("\t\tNão existe este Product no stock.\n");
+            printf("\t\tThis product doesn't exist.\n");
             getch();
             flag = 0;
             break;
@@ -290,7 +292,7 @@ void show_products(FILE* stock){
 
     i = 0;
 
-    printf("\t\tOpcoes: \n\n");
+    printf("\t\tOptions: \n\n");
     do {
         fread(&p,sizeof(Product),1,stock);
         printf("%d - ",p.cdg);
@@ -335,10 +337,10 @@ void close_table(Table* tables, int table, FILE* stock){
 	fputs("\n",receipt);
 	fputs("TOTAL: ",receipt);
 	fprintf(receipt,"%29.2f\n\n",(tables+table)->price);
-	fprintf(receipt,"%24.15s\n","volte sempre!");
+	fprintf(receipt,"%24.15s\n","thank you for your business!");
 
-    printf("\t\tEncerrando Table %d.\n\n",table);
-    printf("Valor Total: %.2f\n",(tables+table)->price);
+    printf("\t\tClosing table %d.\n\n",table);
+    printf("Total: %.2f\n",(tables+table)->price);
     printf("\n");
     (tables+table)->price = 0.00;
 	fclose(receipt);
@@ -356,7 +358,7 @@ int check_limit(int table,int qnt_tables){
     if((table >= 0) && (table < qnt_tables)){
         return 1;
     } else {
-        printf("\t\tNao existe Table %d.\n\n",table);
+        printf("\t\tThere is no table %d.\n\n",table);
         getch();
         clean_screen();
         return 0;
@@ -366,7 +368,7 @@ int check_limit(int table,int qnt_tables){
 void option_error(){
     clean_screen();
 	/*FUNÇÃO AUXILIAR PARA CASO DEFAULT DE SWITCH CASE*/
-    printf("\t\tNao existe essa option no menu.\n\n");
+    printf("\t\tOption doesn't exist.\n\n");
     getch();
     clean_screen();
 }
@@ -380,14 +382,14 @@ void show_menu(FILE *config){
 	/*SEMPRE IMPRIMIR O CABEÇALHO E O MENU AO VOLTAR PARA A TELA PRINCIPAL*/
 	print_title(config);
     printf(".________________________________. \n");
-    printf("| 1 - Adicionar orders em Table. | \n");
-    printf("| 2 - Verificar orders de Table. | \n");
-    printf("| 3 - Remover orders de Table.   | \n");
-    printf("| 4 - changer tables.              | \n");
-    printf("| 5 - Fechar conta de Table.      | \n");
-    printf("| 0 - Finalizar o programa.      | \n");
+    printf("| 1 - Add orders to table.       | \n");
+    printf("| 2 - Verify table order.        | \n");
+    printf("| 3 - Remove table order.        | \n");
+    printf("| 4 - Change tables.             | \n");
+    printf("| 5 - Close table.               | \n");
+    printf("| 0 - End program.               | \n");
     printf("|________________________________|\n\n");
-    printf("Entre com a option desejada: ");
+    printf("Enter option number: ");
 }
 
 FILE* generate_receipt(Table* tables, int table){
@@ -408,10 +410,10 @@ FILE* generate_receipt(Table* tables, int table){
     receipt = fopen(name,"w+");
 
 	/*FORMATAÇÃO E MOSTRAR DATA E HORA DO SISTEMA NA HORA DO PREENCHIMENTO DA receipt FISCAL*/
-	fprintf(receipt,"Data: %.2d/%.2d/%d\nHora: %.2d:%.2d:%.2d\n\n",tm.tm_mday, tm.tm_mon + 1,  tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec);
-	fprintf(receipt,"%24.15s\n","CUPOM FISCAL");
+	fprintf(receipt,"Date: %.2d/%.2d/%d\nHora: %.2d:%.2d:%.2d\n\n",tm.tm_mday, tm.tm_mon + 1,  tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec);
+	fprintf(receipt,"%24.15s\n","RECEIPT");
 	fputs("_____________________________________\n",receipt);
-	fprintf(receipt,"%10.15s %26.6s\n","ITEM","PREÇO");
+	fprintf(receipt,"%10.15s %26.6s\n","ITEM","PRICE");
 	fputs("_____________________________________\n",receipt);
 
 	return receipt;
