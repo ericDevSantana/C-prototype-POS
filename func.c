@@ -337,7 +337,7 @@ void close_table(Table* tables, int table, FILE* stock){
 	fputs("\n",receipt);
 	fputs("TOTAL: ",receipt);
 	fprintf(receipt,"%29.2f\n\n",(tables+table)->price);
-	fprintf(receipt,"%24.15s\n","thank you for your business!");
+	fprintf(receipt,"%24.28s\n","thank you for your business!");
 
     printf("\t\tClosing table %d.\n\n",table);
     printf("Total: %.2f\n",(tables+table)->price);
