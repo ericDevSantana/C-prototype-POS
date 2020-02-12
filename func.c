@@ -149,8 +149,8 @@ void show_orders(Table* tables, int table, FILE* stock){
         rewind(stock);
         if((tables+table)->ORDERS[i]){
             printf("[%d] - ",(tables+table)->ORDERS[i]);
-			/*Table ARMAZENA CODIGO, Product TEM CODIGO, AQUI PROCURA O CODIGO DA Table ATÉ BATER COM O CODIGO DO Product E MOSTRA*/
-			//Table stores product code so here we search for the code
+
+			//Table stores product's codes so here we search for the code to match with any existent product and show on the screen
             do {
                 fread(&p,sizeof(Product),1,stock);
                 if(p.cdg == (tables+table)->ORDERS[i])
@@ -168,7 +168,7 @@ void add_orders(Table* tables, int table){
     Product p;
     FILE* stock;
 
-	/*ABRIR NOVAMENTE ARQUIVO stock PARA LEITURA E MOSTRAR NA TELA PARA O RESPONSÁVEL ADICIONAR O PEDIDO CORRETO*/
+	//Open stock.bin to read and show on the screen the orders available to add in the table
     stock = fopen("stock.bin","rb");
 
     show_products(stock);
@@ -178,7 +178,8 @@ void add_orders(Table* tables, int table){
 
     rewind(stock);
     i = 0;
-	/*VERIFICA SE O CODIGO DIGITADO REALMENTE É UM Product SENÃO SAI COM FLAG = 0 PARA N DEIXAR EXECUTAR O INCREMENTO NO PREÇO*/
+
+	//Verify is the code entered is in fact an existent product, else variable FLAG gets 0 to prevent from adding something in the table's total
     do {
         fread(&p,sizeof(Product),1,stock);
         if (p.cdg == cdg){
@@ -200,7 +201,8 @@ void add_orders(Table* tables, int table){
         getch();
         flag = 0;
     }
-	/*CASO O CODIGO DIGITADO É UM Product, ELE É INCREMENTADO NO PREÇO FINAL DA Table E ADICIONADO AO VETOR DE orders*/
+
+	//If the code entered is a product, add the price in the table's total and add the code to Order's vector of that table
     if(flag){
         for(i=0;i<NUM_ORDERS;i++){
             if(!(tables+table)->ORDERS[i]){
@@ -220,10 +222,10 @@ void remove_orders(Table* tables, int table, int cdg){
     Product p;
     FILE* stock;
 
-	/*ABRIR ARQUIVO stock PARA LER E MOSTRAR orders*/
+	//Open stock.bin file to read and show all orders
     stock = fopen("stock.bin","rb");
 
-	/*VERIFICAR SE EXISTE O PEDIDO NA Table*/
+	//Verify if there is the order code in the order's vector
     do {
         fread(&p,sizeof(Product),1,stock);
         if (p.cdg == cdg){
@@ -239,7 +241,7 @@ void remove_orders(Table* tables, int table, int cdg){
         }
     }while(1);
 
-	/*RETIRAR Product DO VETOR DE orders E DECREMENTAR O PREÇO FINAL DA Table*/
+	//Remove product from the Order's vector and decrease the price from the total of the table
     if(flag){
         for(i=0;i<NUM_ORDERS;i++){
             if((tables+table)->ORDERS[i] == cdg){
@@ -258,7 +260,7 @@ void remove_orders(Table* tables, int table, int cdg){
 void change_tables(Table* tables, int table1, int table2){
     Table aux;
 	
-	/*change DE PONTEIROS*/
+	//Change Table pointers --arithmetic
     aux = *(tables+table1);
     *(tables+table1) = *(tables+table2);
     *(tables+table2) = aux;
@@ -266,14 +268,14 @@ void change_tables(Table* tables, int table1, int table2){
 
 void free_tables(Table* tables){
 
-	/*free MEMORIA ALOCADA*/
+	//Free memory allocated for tables
     free(tables);
 }
 
 int num_tables(FILE* config){
     int qnt_tables;
 
-	/*POSIÇÃO 64 BYTES INDICA QUANTAS tables TEM E RETORNA PARA USO EM OUTRAS FUNÇÕES*/
+	//Offset 64 bytes to find how many tables there are in the system -- Return number of tables
     rewind(config);
     fseek(config,64,SEEK_CUR);
     fread(&qnt_tables,sizeof(int),1,config);
@@ -285,7 +287,7 @@ void show_products(FILE* stock){
     int i,tam;
     Product p;
 
-	/*SABER QUANTOS ProductS TEM EM stock E MOSTRAR NA TELA DE ADICIONAR orders*/
+	//Know how many products there are in the stock.bin and show it in the ADD ORDER screen
     fseek(stock,0,SEEK_END);
     tam = ftell(stock)/sizeof(Product);
     fseek(stock,0,SEEK_SET);
@@ -306,10 +308,10 @@ void close_table(Table* tables, int table, FILE* stock){
 	int i,j,tam;
 	Product p;
 
-	/*RETORNA PONTEIRO PARA receipt FISCAL E SALVAR COMO TXT NA PASTA receiptS*/
+	//Return the pointer to the receipt created and save it in the folder Receipts
 	receipt = generate_receipt(tables,table);
 
-	/*CONTAR QUANTOS ProductS EXISTEM NO stock BIN*/
+	//Count how many products there are in the stock.bin file
 	fseek(stock,0,SEEK_END);
     tam = ftell(stock)/sizeof(Product);
     fseek(stock,0,SEEK_SET);
@@ -318,7 +320,8 @@ void close_table(Table* tables, int table, FILE* stock){
 		j=0;
 		rewind(stock);
         if((tables+table)->ORDERS[i]){
-			/*AQUI PROCURA NO ARQUIVO stock TODOS OS orders DA Table PARA IMPRIMIR NA receipt FISCAL*/
+
+			//Search all orders of the table in the stock.bin file to print in the sales receipt
 			do {
                 fread(&p,sizeof(Product),1,stock);
                 if(p.cdg == (tables+table)->ORDERS[i]){
@@ -328,16 +331,17 @@ void close_table(Table* tables, int table, FILE* stock){
 				}
                 j++;
             }while(j != tam);
-			/*ZERAR O PREÇO FINAL DA Table*/
+
+			//Reset table's Total to U$00
             (tables+table)->ORDERS[i] = 0.00;
         }
     }
 
-	/*FORMATAÇÃO DO CORPO DA receipt FISCAL*/
+	//Body format of sales receipt
 	fputs("\n",receipt);
 	fputs("TOTAL: ",receipt);
 	fprintf(receipt,"%29.2f\n\n",(tables+table)->price);
-	fprintf(receipt,"%24.28s\n","thank you for your business!");
+	fprintf(receipt,"%24.28s\n","Thank you for your business!");
 
     printf("\t\tClosing table %d.\n\n",table);
     printf("Total: %.2f\n",(tables+table)->price);
@@ -348,13 +352,13 @@ void close_table(Table* tables, int table, FILE* stock){
 
 void getch(){
 
-	/*SISTEMA ESPERA QUALQUER TECLA*/
+	//Wait for any key -- pause
     system("pause");
 }
 
 int check_limit(int table,int qnt_tables){
 
-	/*FUNÇÃO AUXILIAR PARA VERIFICAR SE AS tables EM QUESTÃO EXISTEM*/
+	//Additional function to verify if tables exist within the system
     if((table >= 0) && (table < qnt_tables)){
         return 1;
     } else {
@@ -367,19 +371,21 @@ int check_limit(int table,int qnt_tables){
 
 void option_error(){
     clean_screen();
-	/*FUNÇÃO AUXILIAR PARA CASO DEFAULT DE SWITCH CASE*/
+
+	//Additional procedure in case default at main screen
     printf("\t\tOption doesn't exist.\n\n");
     getch();
     clean_screen();
 }
 
 void clean_screen(){
-	/*LIMPAR TELA*/
+	//clean screen
     system("cls");
 }
 
 void show_menu(FILE *config){
-	/*SEMPRE IMPRIMIR O CABEÇALHO E O MENU AO VOLTAR PARA A TELA PRINCIPAL*/
+
+	//Always print Title and Menu when come back to main screen
 	print_title(config);
     printf(".________________________________. \n");
     printf("| 1 - Add orders to table.       | \n");
@@ -395,21 +401,22 @@ void show_menu(FILE *config){
 FILE* generate_receipt(Table* tables, int table){
 	FILE* receipt;
 
-	/*ESTRUTURAS PARA ARMAZENAR A DATA E HORA DO SISTEMA TM*/
+	//Time struct to get Date and Time from the system//
 	time_t t = time(NULL);
 	struct tm *tm = localtime(&t);
 
 	char name[21];
 	char n_table[3];
 
-	/*CONCATENAÇÃO DOS nameS DAS receiptS FISCAIS DE CADA Table DENTRO DA PASTA receiptS*/
+	//Concatenate and generate receipts names and create the receipt.txt file to write the receipt info
 	sprintf(n_table,"%d",table);
 	strcpy(name,"Receipt/receiptF_0");
 	strcat(name,n_table);
 	strcat(name,".txt");
-    receipt = fopen(name,"w+");
+	receipt = fopen(name,"w+");
 
-	/*FORMATAÇÃO E MOSTRAR DATA E HORA DO SISTEMA NA HORA DO PREENCHIMENTO DA receipt FISCAL*/
+	//Format and show Date and Time of the system in the receipt
+
 	//fprintf(receipt,"Date: %.2d/%.2d/%d\nTime: %.2d:%.2d:%d\n\n",tm.tm_mday, tm.tm_mon + 1,  tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec);
 	fprintf(receipt, "Date and Time: %s", asctime(tm));
 	fprintf(receipt,"%24.15s\n","RECEIPT");
