@@ -10,14 +10,14 @@ int main()
     FILE *file_config;
     FILE *stock;
 
-	/*VARIAVEL PARA VERIFICAR SE EXISTE PASTA PARA AS NOTAS FISCAIS*/
+	//Variable to verify if there is a folder called Receipt
 	DIR* dir = opendir("Receipt");
 
-	/*CASO NÃO TENHA, CRIAR COM PERMISSÃO PARA LER E ESCREVER 0700*/
+	//if there's no such file in the directory create a new one, read and write permission
 	if(dir){
 		closedir(dir);
 	} else if (ENOENT == errno){
-		mkdir("Receipt");
+		_mkdir("Receipt");
 		closedir(dir);
 	}
 
@@ -27,14 +27,15 @@ int main()
     qnt_tables = num_tables(file_config);
 	clean_screen();
 
-    /*LOOP PRINCIPAL DO SISTEMA*/
+    //MAIN LOOP
     while(op) {
         show_menu(file_config);
-        /*LEITURA DE EVENTOS*/
+
+        //Options reading
         scanf("%d",&op);
 
         switch(op) {
-		/*ADICIONA PEDIDOS*/
+		/*Add orders*/
         case 1:
             printf("\nTable: ");
             scanf("%d",&table);
@@ -43,7 +44,7 @@ int main()
                 add_orders(tables,table);
             }
             break;
-		/*VERIFICAR PEDIDOS*/
+		/*Verify orders*/
         case 2:
             printf("\nTable: ");
             scanf("%d",&table);
@@ -54,14 +55,13 @@ int main()
                 clean_screen();
             }
             break;
-		/*REMOVER PEDIDOS*/
+		/*Remove orders*/
         case 3:
             printf("\nTable: ");
             scanf("%d",&table);
 
             clean_screen();
             if(check_limit(table,qnt_tables)){
-                //mostra_produtos(stock);
                 show_orders(tables,table,stock);
                 printf("\nProduct Code: ");
                 scanf("%d",&cdg);
@@ -69,7 +69,7 @@ int main()
             }
             clean_screen();
             break;
-		/*TROCAR MESAS*/
+		/*Change tables*/
         case 4:
             printf("\nChange table: ");
             scanf("%d",&table1);
@@ -80,7 +80,7 @@ int main()
                 change_tables(tables,table1,table2);
             }
             break;
-		/*FECHAR CONTA*/
+		/*Close table*/
         case 5:
             printf("\nTable: ");
             scanf("%d",&table);
@@ -91,10 +91,10 @@ int main()
                 clean_screen();
             }
             break;
-		/*SAIR*/
+		/*OUT of main loop*/
         case 0:
             break;
-		/*OPÇAO INDESEJADA*/
+		/*Inexistent option*/
         default:
             option_error();
             break;
@@ -102,6 +102,6 @@ int main()
     }
     fclose(file_config);
     free_tables(tables);
-    /*FIM LOOP PRINCIPAL E DESALOCAÇÃO DE MESAS*/
+    /*End of main loop and desalocating tables*/
     return 0;
 }

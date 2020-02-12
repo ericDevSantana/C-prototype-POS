@@ -397,7 +397,7 @@ FILE* generate_receipt(Table* tables, int table){
 
 	/*ESTRUTURAS PARA ARMAZENAR A DATA E HORA DO SISTEMA TM*/
 	time_t t = time(NULL);
-	struct tm tm = *localtime(&t);
+	struct tm *tm = localtime(&t);
 
 	char name[21];
 	char n_table[3];
@@ -410,7 +410,8 @@ FILE* generate_receipt(Table* tables, int table){
     receipt = fopen(name,"w+");
 
 	/*FORMATAÇÃO E MOSTRAR DATA E HORA DO SISTEMA NA HORA DO PREENCHIMENTO DA receipt FISCAL*/
-	fprintf(receipt,"Date: %.2d/%.2d/%d\nHora: %.2d:%.2d:%.2d\n\n",tm.tm_mday, tm.tm_mon + 1,  tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec);
+	//fprintf(receipt,"Date: %.2d/%.2d/%d\nTime: %.2d:%.2d:%d\n\n",tm.tm_mday, tm.tm_mon + 1,  tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec);
+	fprintf(receipt, "Date and Time: %s", asctime(tm));
 	fprintf(receipt,"%24.15s\n","RECEIPT");
 	fputs("_____________________________________\n",receipt);
 	fprintf(receipt,"%10.15s %26.6s\n","ITEM","PRICE");
